@@ -35,12 +35,15 @@ import { AudioPlayer } from './components/AudioPlayer';
 import { DashboardView } from './views/DashboardView';
 import { ResumeAnalyzerView } from './views/ResumeAnalyzerView';
 import { QuestionBankView } from './views/QuestionBankView';
+import { LoginView } from './views/LoginView';
 import ReactMarkdown from 'react-markdown';
 import { cn } from './lib/utils';
+import { getAuthToken, api } from './services/api';
 
 type BaseView = 'dashboard' | 'interview' | 'resume' | 'questions';
 
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!getAuthToken());
   const [currentView, setCurrentView] = useState<BaseView>('dashboard');
   const [step, setStep] = useState<'setup' | 'interview' | 'results'>('setup');
 
@@ -139,31 +142,45 @@ export default function App() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  const [sessionId, setSessionId] = useState<number | null>(null);
+  const [currentQuestionId, setCurrentQuestionId] = useState<number | null>(null);
+
   const startInterview = async () => {
     setStep('interview');
     setIsLoading(true);
     try {
-      const firstQuestion = await generateInterviewQuestion(config, []);
+      // Connect to the Java backend
+      const res = await api.interview.createSession({
+        jobCategoryId: 1, // Simplified for now; you could let users select it
+        difficulty: config.difficulty === '初级' ? 'EASY' : config.difficulty === '中级' ? 'MEDIUM' : 'HARD',
+        questionCount: 5,
+      });
+      
+      setSessionId(res.session.id);
+      setCurrentQuestionId(res.firstQuestion.id);
+
+      const firstQuestionText = res.firstQuestion.questionText;
+
       const newMessage: Message = {
         role: 'assistant',
-        content: firstQuestion,
+        content: firstQuestionText,
         timestamp: Date.now()
       };
       setMessages([newMessage]);
       
       if (isAudioEnabled) {
-        const audio = await textToSpeech(firstQuestion);
+        const audio = await textToSpeech(firstQuestionText);
         if (audio) setCurrentAudio(audio);
       }
     } catch (error) {
-      console.error(error);
+      console.error('Failed to start interview:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleSendMessage = async () => {
-    if (!inputText.trim() || isLoading) return;
+    if (!inputText.trim() || isLoading || !sessionId || !currentQuestionId) return;
 
     const userMessage: Message = {
       role: 'user',
@@ -177,33 +194,66 @@ export default function App() {
     setIsLoading(true);
 
     try {
-      const nextQuestion = await generateInterviewQuestion(config, newMessages);
-      const assistantMessage: Message = {
-        role: 'assistant',
-        content: nextQuestion,
-        timestamp: Date.now()
-      };
-      setMessages(prev => [...prev, assistantMessage]);
+      // Submit answer to the Java backend
+      const res = await api.interview.submitAnswer(currentQuestionId, userMessage.content);
+      
+      if (res.nextQuestion) {
+        setCurrentQuestionId(res.nextQuestion.id);
+        const assistantMessage: Message = {
+          role: 'assistant',
+          content: res.nextQuestion.questionText,
+          timestamp: Date.now()
+        };
+        setMessages(prev => [...prev, assistantMessage]);
 
-      if (isAudioEnabled) {
-        const audio = await textToSpeech(nextQuestion);
-        if (audio) setCurrentAudio(audio);
+        if (isAudioEnabled) {
+          const audio = await textToSpeech(res.nextQuestion.questionText);
+          if (audio) setCurrentAudio(audio);
+        }
+      } else {
+        // Complete the session
+        await endInterview(sessionId);
       }
     } catch (error) {
-      console.error(error);
+      console.error('Failed to send answer:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const endInterview = async () => {
+  const endInterview = async (currentSessionId?: number) => {
+    const sId = currentSessionId || sessionId;
+    if (!sId) return;
+    
     setIsLoading(true);
     try {
-      const result = await evaluateInterview(config, messages);
+      // End tracking on backend side
+      await api.interview.completeSession(sId);
+      
+      // We can reuse the frontend evaluation format or fetch results from backend.
+      // E.g. getSessionDetail could contain all stats.
+      const sessionDetail = await api.interview.getSessionDetail(sId);
+      
+      // Let's adapt it to our existing EvaluationResult object structure
+      // Sum up average score
+      const answers = sessionDetail.questions || [];
+      const score = answers.length > 0 ? Math.round(answers.reduce((acc: number, val: any) => acc + (val.score || 0), 0) / answers.length) : 0;
+      
+      const result: EvaluationResult = {
+        overallScore: score,
+        strengths: ["系统已记录您的回答", "您的回答已通过后端评估模型判定"],
+        weaknesses: ["评估详细反馈可查看问题回顾"],
+        detailedFeedback: answers.map((q: any) => ({
+          question: q.questionText,
+          score: q.score || 0,
+          feedback: q.feedback || "尚未评分"
+        }))
+      };
+      
       setEvaluation(result);
       setStep('results');
     } catch (error) {
-      console.error(error);
+      console.error('Failed to end interview:', error);
     } finally {
       setIsLoading(false);
     }
@@ -286,16 +336,20 @@ export default function App() {
         "flex-1 w-full",
         currentView === 'interview' && step === 'interview' ? "" : "max-w-7xl mx-auto px-4 py-8"
       )}>
-        {currentView === 'dashboard' && <DashboardView onNavigate={(view) => setCurrentView(view)} />}
-        {currentView === 'resume' && <ResumeAnalyzerView />}
-        {currentView === 'questions' && <QuestionBankView onStartPractice={(q) => {
-           setConfig({ ...config, role: '自选题目练习', track: '技术面试', difficulty: '中级', companyName: '通用', resumeText: '重点考察：' + q });
-           setCurrentView('interview');
-           setStep('setup');
-        }} />}
-        {currentView === 'interview' && (
-          <AnimatePresence mode="wait">
-            {step === 'setup' && (
+        {!isAuthenticated ? (
+          <LoginView onLoginSuccess={() => setIsAuthenticated(true)} />
+        ) : (
+          <>
+            {currentView === 'dashboard' && <DashboardView onNavigate={(view) => setCurrentView(view)} />}
+            {currentView === 'resume' && <ResumeAnalyzerView />}
+            {currentView === 'questions' && <QuestionBankView onStartPractice={(q) => {
+               setConfig({ ...config, role: '自选题目练习', track: '技术面试', difficulty: '中级', companyName: '通用', resumeText: '重点考察：' + q });
+               setCurrentView('interview');
+               setStep('setup');
+            }} />}
+            {currentView === 'interview' && (
+              <AnimatePresence mode="wait">
+                {step === 'setup' && (
             <motion.div
               key="setup"
               initial={{ opacity: 0, y: 20 }}
@@ -739,7 +793,9 @@ export default function App() {
           )}
         </AnimatePresence>
         )}
-      </main>
+      </>
+    )}
+  </main>
       
       <AudioPlayer base64Audio={currentAudio} onEnded={() => setCurrentAudio(null)} />
     </div>
