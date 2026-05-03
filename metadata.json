@@ -1,0 +1,6 @@
+{
+  "name": "AceAI Interviewer",
+  "description": "An advanced AI-powered job interview simulator with real-time feedback, voice synthesis, and performance analytics.",
+  "requestFramePermissions": ["microphone", "camera"],
+  "majorCapabilities": ["AI Chat", "Voice Synthesis", "Performance Analytics"]
+}
