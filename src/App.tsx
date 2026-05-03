@@ -365,7 +365,7 @@ export default function App() {
             {currentView === 'interview' && (
               <AnimatePresence mode="wait">
                 {step === 'setup' && (
-            <motion.div
+                  <motion.div
               key="setup"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -373,32 +373,32 @@ export default function App() {
               className="max-w-2xl mx-auto"
             >
               <div className="text-center mb-10">
-                <h1 className="text-4xl font-bold text-slate-900 mb-4 tracking-tight">为梦寐以求的工作做好准备</h1>
-                <p className="text-slate-500 text-lg">选择面试参数，开始一场真实的 AI 驱动面试环节。</p>
+                <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-4 tracking-tight">为梦寐以求的工作做好准备</h1>
+                <p className="text-slate-500 dark:text-slate-400 text-lg">选择面试参数，开始一场真实的 AI 驱动面试环节。</p>
               </div>
 
-              <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
                       <Briefcase size={14} className="text-indigo-500" /> 目标职位
                     </label>
                     <input 
                       type="text" 
                       value={config.role}
                       onChange={e => setConfig({...config, role: e.target.value})}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600"
                       placeholder="例如：资深前端工程师"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
                       <Settings size={14} className="text-indigo-500" /> 面试类别
                     </label>
                     <select 
                       value={config.track}
                       onChange={e => setConfig({...config, track: e.target.value as any})}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all appearance-none"
                     >
                       <option>技术面试</option>
                       <option>行为面试</option>
@@ -407,13 +407,13 @@ export default function App() {
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
                       <TrendingUp size={14} className="text-indigo-500" /> 难度级别
                     </label>
                     <select 
                       value={config.difficulty}
                       onChange={e => setConfig({...config, difficulty: e.target.value as any})}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all appearance-none"
                     >
                       <option>初级</option>
                       <option>中级</option>
@@ -422,27 +422,27 @@ export default function App() {
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
                       <Target size={14} className="text-indigo-500" /> 目标公司
                     </label>
                     <input 
                       type="text" 
                       value={config.companyName}
                       onChange={e => setConfig({...config, companyName: e.target.value})}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600"
                       placeholder="例如：字节跳动、腾讯、初创公司"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2 mb-8">
-                  <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
                     <MessageSquare size={14} className="text-indigo-500" /> 个人简历 / 工作背景 (可选)
                   </label>
                   <textarea 
                     value={config.resumeText}
                     onChange={e => setConfig({...config, resumeText: e.target.value})}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all h-32 resize-none"
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all h-32 resize-none placeholder:text-slate-400 dark:placeholder:text-slate-600"
                     placeholder="粘贴你的简历或简短描述工作经历，以获得个性化的面试体验。"
                   />
                 </div>
@@ -450,10 +450,10 @@ export default function App() {
                 <button 
                   onClick={startInterview}
                   disabled={isLoading}
-                  className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-400 text-white font-bold rounded-2xl shadow-lg shadow-indigo-200 transition-all flex items-center justify-center gap-2 group hover:-translate-y-0.5 hover:shadow-indigo-300 active:translate-y-0.5 disabled:hover:translate-y-0 disabled:hover:shadow-indigo-200"
+                  className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 disabled:bg-slate-400 dark:disabled:bg-slate-700 text-white font-bold rounded-2xl shadow-lg shadow-indigo-600/20 dark:shadow-indigo-500/20 transition-all flex items-center justify-center gap-3 group hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-600/30 active:scale-[0.98]"
                 >
                   {isLoading ? '准备实验室中...' : '开始面试环节'}
-                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight size={18} className="group-hover:translate-x-1.5 transition-transform duration-300" />
                 </button>
               </div>
             </motion.div>
