@@ -37,8 +37,11 @@ import { ResumeAnalyzerView } from './views/ResumeAnalyzerView';
 import { QuestionBankView } from './views/QuestionBankView';
 import { LoginView } from './views/LoginView';
 import ReactMarkdown from 'react-markdown';
+import { ThemeToggle } from './components/ThemeToggle';
 import { cn } from './lib/utils';
 import { getAuthToken, api } from './services/api';
+
+import { Toaster, toast } from 'sonner';
 
 type BaseView = 'dashboard' | 'interview' | 'resume' | 'questions';
 
@@ -172,8 +175,11 @@ export default function App() {
         const audio = await textToSpeech(firstQuestionText);
         if (audio) setCurrentAudio(audio);
       }
-    } catch (error) {
+      toast.success('面试环境已准备就绪！');
+    } catch (error: any) {
       console.error('Failed to start interview:', error);
+      toast.error(error.message || '启动面试失败，网络可能存在问题');
+      setStep('setup'); // Fallback to setup if starting fails
     } finally {
       setIsLoading(false);
     }
@@ -212,10 +218,14 @@ export default function App() {
         }
       } else {
         // Complete the session
+        toast.success('所有问题已答完，正在生成评估报告...');
         await endInterview(sessionId);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to send answer:', error);
+      toast.error(error.message || '发送回答失败，请检查网络');
+      // On failure, revert the message view
+      setMessages(messages);
     } finally {
       setIsLoading(false);
     }
@@ -241,35 +251,38 @@ export default function App() {
       
       const result: EvaluationResult = {
         overallScore: score,
+        communicationScore: score,
+        technicalScore: score,
+        problemSolvingScore: score,
         strengths: ["系统已记录您的回答", "您的回答已通过后端评估模型判定"],
-        weaknesses: ["评估详细反馈可查看问题回顾"],
-        detailedFeedback: answers.map((q: any) => ({
-          question: q.questionText,
-          score: q.score || 0,
-          feedback: q.feedback || "尚未评分"
-        }))
+        improvements: ["评估详细反馈可查看问题回顾"],
+        detailedFeedback: answers.map((q: any) => `问题：${q.questionText}\n得分：${q.score || 0}\n反馈：${q.feedback || '无'}`).join('\n\n')
       };
       
       setEvaluation(result);
       setStep('results');
-    } catch (error) {
+      toast.success('面试报告生成成功！');
+    } catch (error: any) {
       console.error('Failed to end interview:', error);
+      toast.error(error.message || '拉取面试报告失败，请稍后刷新');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] text-slate-900 font-sans selection:bg-indigo-100 flex flex-col">
-      <nav className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between shrink-0 sticky top-0 z-50 backdrop-blur-md">
+    <div className="min-h-screen bg-[#F9FAFB] dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-500/30 flex flex-col transition-colors duration-300">
+      <Toaster position="top-center" richColors />
+      {isAuthenticated && (
+      <nav className="h-16 bg-white/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 px-6 flex items-center justify-between shrink-0 sticky top-0 z-50 backdrop-blur-md transition-colors duration-300">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => setCurrentView('dashboard')}>
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-200">
               <Briefcase size={18} className="text-white" />
             </div>
-            <span className="text-xl font-bold tracking-tight text-slate-800 flex items-center gap-2">
+            <span className="text-xl font-bold tracking-tight text-slate-800 dark:text-white flex items-center gap-2">
               AceAI
-              <span className="text-indigo-600 font-medium text-[10px] uppercase tracking-widest px-2 py-0.5 bg-indigo-50 rounded-full border border-indigo-100 hidden sm:inline-block">专家版</span>
+              <span className="text-indigo-600 dark:text-indigo-400 font-medium text-[10px] uppercase tracking-widest px-2 py-0.5 bg-indigo-50 dark:bg-indigo-500/10 rounded-full border border-indigo-100 dark:border-indigo-500/20 hidden sm:inline-block">专家版</span>
             </span>
           </div>
 
@@ -321,20 +334,22 @@ export default function App() {
           </button>
           <div className="h-4 w-px bg-slate-200" />
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-semibold text-slate-700">访客用户</p>
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">访客用户</p>
               <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">在线</p>
             </div>
-            <div className="w-9 h-9 bg-slate-100 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 font-bold text-xs">
+            <div className="w-9 h-9 bg-slate-100 dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-500 font-bold text-xs">
               U
             </div>
           </div>
         </div>
       </nav>
+      )}
 
       <main className={cn(
-        "flex-1 w-full",
-        currentView === 'interview' && step === 'interview' ? "" : "max-w-7xl mx-auto px-4 py-8"
+        "flex-1 w-full flex flex-col",
+        (!isAuthenticated || (currentView === 'interview' && step === 'interview')) ? "" : "max-w-7xl mx-auto px-4 py-8"
       )}>
         {!isAuthenticated ? (
           <LoginView onLoginSuccess={() => setIsAuthenticated(true)} />
@@ -435,7 +450,7 @@ export default function App() {
                 <button 
                   onClick={startInterview}
                   disabled={isLoading}
-                  className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-bold rounded-2xl shadow-lg shadow-indigo-200 transition-all flex items-center justify-center gap-2 group"
+                  className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-400 text-white font-bold rounded-2xl shadow-lg shadow-indigo-200 transition-all flex items-center justify-center gap-2 group hover:-translate-y-0.5 hover:shadow-indigo-300 active:translate-y-0.5 disabled:hover:translate-y-0 disabled:hover:shadow-indigo-200"
                 >
                   {isLoading ? '准备实验室中...' : '开始面试环节'}
                   <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
@@ -650,7 +665,7 @@ export default function App() {
                   </div>
 
                   <button 
-                    onClick={endInterview}
+                    onClick={() => endInterview()}
                     className="px-6 py-3 bg-rose-50 text-rose-600 border border-rose-100 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-rose-100 transition-all flex items-center gap-2"
                   >
                     完成面试

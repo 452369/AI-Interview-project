@@ -4,6 +4,7 @@ import { api } from '../services/api';
 import { ResumeAnalysisResult } from '../types';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
+import { toast } from 'sonner';
 
 export function ResumeAnalyzerView() {
   const [resumeText, setResumeText] = useState('');
@@ -26,13 +27,16 @@ export function ResumeAnalyzerView() {
       // For now we map whatever we can.
       setResult({
         overallScore: res.score || 85,
+        summary: res.summary || "这是一级棒的简历",
         strengths: res.strengths || ["项目经历描述较为详细"],
         weaknesses: res.weaknesses || ["部分成就缺乏数据支撑"],
         suggestions: res.suggestions || ["建议在职责描述中增加具体的业务数据指标"],
         atsScore: res.atsScore || 90
       });
-    } catch (error) {
+      toast.success('简历解析与优化建议生成完毕！');
+    } catch (error: any) {
       console.error('Failed to optimize resume:', error);
+      toast.error(error.message || '简历优化请求失败，请稍后重试');
     } finally {
       setIsAnalyzing(false);
     }
@@ -66,7 +70,7 @@ export function ResumeAnalyzerView() {
             <button
               onClick={handleAnalyze}
               disabled={isAnalyzing || !resumeText.trim()}
-              className="mt-4 w-full py-4 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white font-bold rounded-2xl transition-all shadow-lg shadow-slate-200 flex items-center justify-center gap-2"
+              className="mt-4 w-full py-4 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white font-bold rounded-2xl transition-all shadow-lg shadow-slate-200 flex items-center justify-center gap-2 hover:-translate-y-0.5 hover:shadow-slate-300 active:translate-y-0.5 disabled:hover:translate-y-0 disabled:hover:shadow-slate-200"
             >
               {isAnalyzing ? (
                 <>

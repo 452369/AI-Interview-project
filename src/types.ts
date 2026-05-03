@@ -27,6 +27,7 @@ export interface EvaluationResult {
 
 export interface ResumeAnalysisResult {
   overallScore: number;
+  atsScore?: number;
   summary: string;
   strengths: string[];
   weaknesses: string[];

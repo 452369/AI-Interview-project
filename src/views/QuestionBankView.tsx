@@ -88,7 +88,7 @@ export function QuestionBankView({ onStartPractice }: { onStartPractice: (q: str
                      </div>
                      <button
                        onClick={() => onStartPractice(q.text)}
-                       className="p-2 rounded-full text-indigo-600 hover:bg-indigo-50 bg-white border border-slate-200 shadow-sm transition-all"
+                       className="p-2 rounded-full text-indigo-600 hover:bg-indigo-50 bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 active:translate-y-0.5"
                        title="立刻练习这道题"
                      >
                        <PlayCircle size={18} />

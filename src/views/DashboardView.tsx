@@ -24,7 +24,7 @@ export function DashboardView({ onNavigate }: { onNavigate: (view: 'interview' |
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-left">
          <button 
            onClick={() => onNavigate('interview')}
-           className="relative overflow-hidden group bg-gradient-to-br from-indigo-600 to-purple-700 text-left p-8 rounded-3xl text-white shadow-xl shadow-indigo-200 transition-transform transform hover:-translate-y-1"
+           className="relative overflow-hidden group bg-gradient-to-br from-indigo-600 to-purple-700 text-left p-8 rounded-3xl text-white shadow-xl shadow-indigo-200 transition-transform transform hover:-translate-y-1 active:translate-y-0.5"
          >
             <div className="absolute top-0 right-0 p-8 opacity-20 transform group-hover:scale-110 transition-transform duration-500">
                <Briefcase size={120} />
@@ -45,7 +45,7 @@ export function DashboardView({ onNavigate }: { onNavigate: (view: 'interview' |
 
          <button 
            onClick={() => onNavigate('resume')}
-           className="relative overflow-hidden group bg-white border border-slate-200 text-left p-8 rounded-3xl shadow-sm hover:shadow-xl hover:shadow-emerald-100 transition-all transform hover:-translate-y-1"
+           className="relative overflow-hidden group bg-white border border-slate-200 text-left p-8 rounded-3xl shadow-sm hover:shadow-xl hover:shadow-emerald-100 transition-all transform hover:-translate-y-1 active:translate-y-0.5"
          >
             <div className="relative z-10 h-full flex flex-col justify-between min-h-[200px]">
                <div>
@@ -63,7 +63,7 @@ export function DashboardView({ onNavigate }: { onNavigate: (view: 'interview' |
 
          <button 
            onClick={() => onNavigate('questions')}
-           className="relative overflow-hidden group bg-white border border-slate-200 text-left p-8 rounded-3xl shadow-sm hover:shadow-xl hover:shadow-blue-100 transition-all transform hover:-translate-y-1"
+           className="relative overflow-hidden group bg-white border border-slate-200 text-left p-8 rounded-3xl shadow-sm hover:shadow-xl hover:shadow-blue-100 transition-all transform hover:-translate-y-1 active:translate-y-0.5"
          >
             <div className="relative z-10 h-full flex flex-col justify-between min-h-[200px]">
                <div>
